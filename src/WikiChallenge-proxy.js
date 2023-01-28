@@ -44,7 +44,7 @@ https.createServer(
     try {
         requestUrl = new URL("https://testwikichallenge.com" + request.url); // Change later
     } catch(error) {
-        writeHead200(response)
+        writeHead200(response, request)
         response.end("Url is not valid.");
         return false;
     }
@@ -52,7 +52,7 @@ https.createServer(
     // Check if requested url params are present
     let requestQuery = requestUrl.searchParams.get("query");
     if(requestQuery === null) {
-        writeHead200(response)
+        writeHead200(response, request)
         response.end("Request query is not defined.");
         return false;
     }
@@ -62,14 +62,14 @@ https.createServer(
     try {
         queryUrl = new URL(requestQuery);
     } catch(error) {
-        writeHead200(response)
+        writeHead200(response, request)
         response.end("Query url is not valid.");
         return false;
     }
 
     // Check if given url match the allowed external ressources
     if(!allowedExtrnalRessources.includes(queryUrl.hostname)) {
-        writeHead200(response)
+        writeHead200(response, request)
         response.end("Query url hostname is not allowed.");
         return false;
     }
@@ -78,17 +78,17 @@ https.createServer(
     fetch(requestQuery).then((data) => {
         return data.text();
     }).then((data) => {
-        writeHead200(response)
+        writeHead200(response, request)
         response.end(JSON.stringify({ response: data }));
         return false;
     }).catch(() => {
-        writeHead200(response)
+        writeHead200(response, request)
         response.end(JSON.stringify({ response: false }));
         return false;
     });
 }).listen(process.env.SERVER_PORT);
 
-function writeHead200(response) {
+function writeHead200(response, request) {
     response.writeHead(200, {
         "Access-Control-Allow-Origin": request.headers.origin,
         "Access-Control-Allow-Methods": "GET",
